@@ -7,16 +7,24 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -34,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
     private String userEmail;
     private List<String> todos = new ArrayList<>();
     private List<String> todosId = new ArrayList<>();
-
     FirebaseAuth mAuth;
     FirebaseFirestore db;
 
@@ -98,12 +105,78 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void deleteTask(View view) {
+        ImageButton deleteTaskBtn = (ImageButton) findViewById(R.id.task_delete);
+        deleteTaskBtn.setBackgroundResource(android.R.color.transparent);
+        deleteTaskBtn.setImageResource(R.drawable.ic_baseline_radio_button_checked_24);
+
         View parent = (View) view.getParent();
         TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
         String task = String.valueOf(taskTextView.getText());
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("todos").document(task)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("DONE", "Task successfully deleted!");
+                        updateUI();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("ERROR", "Error deleting task", e);
+                    }
+                });
         updateUI();
+        startAnimation();
     }
+
+    private void startAnimation() {
+        View taskView = findViewById(R.id.task_item);
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.slide_left);
+        taskView.startAnimation(animation);
+    }
+
+    public void editTask(View view) {
+        View parent = (View) view.getParent();
+        TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
+        String task = String.valueOf(taskTextView.getText());
+
+        final EditText taskEditText = new EditText(this);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Edit task content")
+                .setView(taskEditText)
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String taskValue = taskEditText.getText().toString();
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+                        db.collection("todos").document(task)
+                                .update("description", taskValue)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(view.getContext(), "Worked.",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(view.getContext(), "Failed.",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                        updateUI();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .create();
+        dialog.show();
+    }
+
 
     private void updateUI() {
         db.collection("todos")
@@ -120,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     todosId.clear();
 
                     for (QueryDocumentSnapshot doc : value) {
-                        if (doc.get("description") != null) {
+                        if (doc.exists() && doc.get("description") != null) {
                             todos.add(doc.getString("description"));
                             todosId.add(doc.getId());
                         }
