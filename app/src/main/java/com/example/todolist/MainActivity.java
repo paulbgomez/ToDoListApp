@@ -7,14 +7,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -24,7 +22,6 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -105,37 +102,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void deleteTask(View view) {
-        ImageButton deleteTaskBtn = (ImageButton) findViewById(R.id.task_delete);
+        ImageButton deleteTaskBtn = (ImageButton) view;
         deleteTaskBtn.setBackgroundResource(android.R.color.transparent);
         deleteTaskBtn.setImageResource(R.drawable.ic_baseline_radio_button_checked_24);
 
         View parent = (View) view.getParent();
         TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
-        String task = String.valueOf(taskTextView.getText());
+        final String task = String.valueOf(taskTextView.getText());
+
+        int position = todos.indexOf(task);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("todos").document(task)
-                .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("DONE", "Task successfully deleted!");
-                        updateUI();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("ERROR", "Error deleting task", e);
-                    }
-                });
-        updateUI();
-        startAnimation();
+        // TODO checkear porque la ultima tarea no borra
+        db.collection("todos").document(todosId.get(position))
+            .delete()
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void unused) {
+//                  startAnimation();
+                    updateUI();
+                }
+            });
     }
 
     private void startAnimation() {
         View taskView = findViewById(R.id.task_item);
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.slide_left);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                // called when the animation starts
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                // called when the animation ends
+                updateUI();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                // called when the animation repeats
+            }
+        });
         taskView.startAnimation(animation);
     }
 
@@ -144,16 +153,19 @@ public class MainActivity extends AppCompatActivity {
         TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
         String task = String.valueOf(taskTextView.getText());
 
+        int position = todos.indexOf(task);
+
         final EditText taskEditText = new EditText(this);
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Edit task content")
+                .setMessage(task)
                 .setView(taskEditText)
                 .setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String taskValue = taskEditText.getText().toString();
                         FirebaseFirestore db = FirebaseFirestore.getInstance();
-                        db.collection("todos").document(task)
+                        db.collection("todos").document(todosId.get(position))
                                 .update("description", taskValue)
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
@@ -193,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                     todosId.clear();
 
                     for (QueryDocumentSnapshot doc : value) {
-                        if (doc.exists() && doc.get("description") != null) {
+                        if (doc.get("description") != null) {
                             todos.add(doc.getString("description"));
                             todosId.add(doc.getId());
                         }
