@@ -5,34 +5,35 @@
     android:id="@+id/task_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="center_vertical">
+    android:layout_gravity="top|center_vertical">
 
     <TextView
         android:id="@+id/task_title"
-        android:layout_width="178dp"
-        android:layout_height="30dp"
+        android:layout_width="279dp"
+        android:layout_height="32dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_marginStart="16dp"
         android:text="Hello"
         android:textColor="@color/black"
         android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/task_edit"
-        android:layout_width="57dp"
-        android:layout_height="wrap_content"
+        android:layout_width="52dp"
+        android:layout_height="23dp"
         android:layout_alignParentEnd="true"
         android:background="?android:attr/selectableItemBackground"
         android:backgroundTint="@color/background"
         android:onClick="editTask"
         app:icon="@drawable/ic_baseline_edit_note_24"
         app:iconTint="@color/black"
-        app:layout_constraintBottom_toBottomOf="@+id/task_title"
+        app:layout_constraintBottom_toBottomOf="@+id/task_delete"
         app:layout_constraintEnd_toStartOf="@+id/task_delete"
-        app:layout_constraintTop_toTopOf="@+id/task_title" />
+        app:layout_constraintTop_toTopOf="@+id/task_delete" />
 
     <ImageButton
         android:id="@+id/task_delete"
