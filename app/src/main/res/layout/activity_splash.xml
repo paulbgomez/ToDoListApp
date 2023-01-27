@@ -6,4 +6,33 @@
     android:layout_height="match_parent"
     tools:context=".Splash">
 
+    <com.mikhaellopez.circularfillableloaders.CircularFillableLoaders
+        android:id="@+id/circularFillableLoaders"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="92dp"
+        android:src="@drawable/splash"
+        app:cfl_border="true"
+        app:cfl_border_width="12dp"
+        app:cfl_progress="80"
+        app:cfl_wave_amplitude="0.06"
+        app:cfl_wave_color="#3f51b5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:fontFamily="cursive"
+        android:text="Loading..."
+        android:textColor="#00BCD4"
+        android:textSize="48sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/circularFillableLoaders" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
