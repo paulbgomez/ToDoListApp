@@ -119,33 +119,9 @@ public class MainActivity extends AppCompatActivity {
             .addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void unused) {
-//                  startAnimation();
                     updateUI();
                 }
             });
-    }
-
-    private void startAnimation() {
-        View taskView = findViewById(R.id.task_item);
-        Animation animation = AnimationUtils.loadAnimation(this, R.anim.slide_left);
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                // called when the animation starts
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                // called when the animation ends
-                updateUI();
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-                // called when the animation repeats
-            }
-        });
-        taskView.startAnimation(animation);
     }
 
     public void editTask(View view) {
